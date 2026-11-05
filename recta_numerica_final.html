@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Explorando los números enteros</title>
+<style>
+/* Estilos generales: colores, distribución, botones y campos de respuesta. */
+:root{font-family:Arial,Helvetica,sans-serif;color:#182b42;background:#f3f6fa}*{box-sizing:border-box}body{margin:0}main{max-width:920px;margin:25px auto;padding:0 16px 40px}header,.panel{background:white;border:1px solid #d9e1e9;border-radius:12px;padding:22px;margin-bottom:15px}h1{margin:0 0 8px;color:#153b65}h2{margin:0 0 12px;color:#153b65;font-size:1.25rem}p{line-height:1.5}.muted{color:#46596d}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}.tabs button{flex:1;min-width:150px}button{cursor:pointer;background:#174d83;color:white;border:0;border-radius:7px;padding:11px 14px;font-size:1rem}button:hover{background:#10395f}button:focus-visible,input:focus-visible{outline:3px solid #e69f00;outline-offset:2px}.tabs button[aria-selected="true"]{background:#0b665d}.fields{display:flex;gap:14px;flex-wrap:wrap;align-items:end}.fields label{display:flex;flex-direction:column;gap:6px;font-weight:bold}.fields input{width:130px;padding:10px;border:1px solid #8b9dad;border-radius:6px;font-size:1rem}.note{padding:12px;border-left:4px solid #256a9e;background:#eaf4fc;margin-top:12px}.feedback{min-height:48px;margin-top:12px;padding:12px;border:1px solid #9db3c7;border-radius:8px;background:#f4f8fb}.feedback.good{border-color:#287453}.feedback.bad{border-color:#a14e36}svg{width:100%;height:auto;display:block}#graph{border:1px solid #d8e1e9;border-radius:8px;background:#fff}.hide{display:none}.caption{font-size:.9rem;color:#42566a}footer{font-size:.9rem;color:#40546a} @media(max-width:480px){header,.panel{padding:14px}.fields label,.fields input{width:100%}}
+</style>
+</head>
+<body><main>
+<!-- Encabezado: propósito e instrucciones generales del recurso. -->
+<header><h1>Explorando los números enteros</h1><p class="muted">Matemática · Sétimo año · Recta numérica dinámica</p><p><strong>Propósito:</strong> representar números enteros, anticipar posiciones y comprobar desplazamientos mediante sumas y restas.</p><p><strong>Instrucciones:</strong> elija uno de los tres modos de actividad. Lea las instrucciones de ese modo, introduzca los números solicitados y seleccione el botón para comprobar su respuesta, si así corresponde. <em>Aclaración:</em> Un desplazamiento positivo indica un movimiento hacia la derecha; uno negativo, hacia la izquierda. Primero intente resolver cada reto sin ayuda y después utilice la recta para comprobarlo.</p></header>
+<!-- Estos botones permiten cambiar entre los tres modos sin abrir otra página. -->
+<nav class="tabs" aria-label="Modos de actividad"><button id="tab-explore" aria-selected="true" onclick="switchMode('explore')">1. Explorar</button><button id="tab-predict" aria-selected="false" onclick="switchMode('predict')">2. Predecir</button><button id="tab-challenge" aria-selected="false" onclick="switchMode('challenge')">3. Desafío</button></nav>
+<!-- La recta se dibuja mediante JavaScript dentro de este elemento SVG. -->
+<section class="panel" aria-labelledby="graph-title"><h2 id="graph-title">Recta numérica</h2><svg id="graph" viewBox="0 0 820 300" role="img" aria-label="Recta numérica de menos veinte a veinte"><title>Recta numérica dinámica</title></svg><p class="caption" id="graph-desc" aria-live="polite">Posición inicial: −3. Posición final: 2.</p></section>
+<!-- Modo 1: permite elegir libremente una posición y un desplazamiento. -->
+<section class="panel" id="explore"><h2>Modo 1. Exploración libre</h2><p><strong>1.</strong> Elija una posición inicial entre −10 y 10.</p><p><strong>2.</strong> Introduzca un desplazamiento entre −10 y 10 (positivo para ir a la derecha y negativo para ir a la izquierda).</p></p><strong>3.</strong> Antes de pulsar «Mostrar recorrido», calcule mentalmente la posición final.</p></p><strong>4.</strong> Pulse el botón y compare el resultado con su predicción.</p><div class="fields"><label>Posición inicial<input id="ex-start" type="number" min="-10" max="10" step="1" value="-3"></label><label>Desplazamiento<input id="ex-move" type="number" min="-10" max="10" step="1" value="5"></label><button onclick="explore()">Mostrar recorrido</button></div><div class="feedback" id="ex-feedback" aria-live="polite">Cambie los valores y seleccione «Mostrar recorrido».</div><div class="note"><strong>Para pensar:</strong> ¿Qué ocurre al sumar un número negativo? ¿Qué sucede si el recorrido cruza el cero?</div></section>
+<!-- Modo 2: el estudiante predice el resultado antes de verlo en la recta. -->
+<section class="panel hide" id="predict"><h2>Modo 2. Predice antes de comprobar</h2><p><strong>1.</strong> Lea la posición inicial y el desplazamiento. </p></p><strong>2.</strong> Calcule la posición final sin utilizar la recta. </p></p><strong>3.</strong> Introduzca su respuesta y seleccione «Comprobar». </p></p><strong>4.</strong> Si se equivoca, inténtelo hasta lograrlo; después seleccione «Otro ejercicio».</p><p id="predict-prompt"></p><div class="fields"><label>Mi predicción<input id="prediction" type="number" step="1" min="-10" max="10" placeholder="Número entero"></label><button onclick="checkPrediction()">Comprobar</button><button onclick="newPrediction()">Otro ejercicio</button></div><div class="feedback" id="predict-feedback" aria-live="polite">Calcule primero sin ver el resultado.</div><div class="note">Recuerde: los números positivos indican movimientos a la derecha y los negativos a la izquierda.</div></section>
+<!-- Modo 3: el estudiante propone tres movimientos para alcanzar una meta. -->
+<section class="panel hide" id="challenge"><h2>Modo 3. Diseña un recorrido</h2><p></p></p><strong>1.</strong> Comience en la posición <strong id="challenge-start">−5</strong> y busque llegar a <strong id="challenge-target">4</strong>. </p></p><strong>2.</strong> Introduzca exactamente tres movimientos, cada uno entre −10 y 10, sin utilizar el cero. </p></p><strong>3.</strong> Incluya al menos un movimiento negativo (hacia la izquierda). </p></p><strong>4.</strong> Seleccione «Comprobar recorrido». </p></p><strong>5.</strong> Si llega a la meta, cambie los movimientos para encontrar otra solución. También puede seleccionar «Generar nuevo desafío» para cambiar la posición inicial y la meta.</p><div class="fields"><label>Movimiento 1<input id="m1" type="number" min="-10" max="10" step="1"></label><label>Movimiento 2<input id="m2" type="number" min="-10" max="10" step="1"></label><label>Movimiento 3<input id="m3" type="number" min="-10" max="10" step="1"></label><button onclick="checkChallenge()">Comprobar recorrido</button><button type="button" onclick="newChallenge()">Generar nuevo desafío</button></div><div class="feedback" id="challenge-feedback" aria-live="polite">Encuentre dos recorridos distintos que lleguen a la meta.</div></section>
+<!-- Declaración de autoría y de las herramientas utilizadas. -->
+<footer><h2>Autoría y desarrollo del recurso</h2><p><strong>Autora:</strong> Yerlin Reyes Fernández.<br></p><p>Este recurso se desarrolló con el apoyo de <strong>ChatGPT (OpenAI)</strong>, utilizado para corregir y organizar código HTML, CSS y JavaScript.</p><p>Durante el proceso se realizaron correcciones y ajustes mediante ChatGPT para mejorar la presentación y el código de la aplicación. Las decisiones sobre el enfoque didáctico, las habilidades seleccionadas y los cambios solicitados, entre otros aspectos, fueron orientadas por la autora.</p><p><strong>Tecnologías:</strong> HTML, CSS y JavaScript. <strong>Apoyo de inteligencia artificial:</strong> ChatGPT (OpenAI).</p><p>La aplicación funciona sin conexión a Internet una vez descargada y no recopila ni envía datos personales. No utiliza bibliotecas externas.</p></footer>
+</main><script>
+'use strict';
+// Acceso abreviado a los elementos de la página mediante su identificador (id).
+const $=id=>document.getElementById(id);
+let mode='explore', currentPrediction=null;
+let challengeStart=-5, challengeTarget=4;
+// Comprueba que la respuesta sea un entero dentro del intervalo permitido.
+function integer(id,min,max){const el=$(id),s=el.value.trim(),n=Number(s);if(!s||!Number.isInteger(n)||n<min||n>max){el.focus();throw Error(`Introduzca un número entero entre ${min} y ${max} en «${el.closest('label')?.textContent.trim()||id}».`)}return n}
+function fmt(n){return n<0?'−'+Math.abs(n):String(n)}
+// Muestra mensajes de orientación, acierto o error debajo de cada actividad.
+function feedback(id,msg,kind=''){const el=$(id);el.textContent=msg;el.className='feedback '+kind}
+// Dibuja cada desplazamiento en una altura independiente.
+// La leyenda inferior evita que los nombres de las posiciones se superpongan.
+// Dibuja la recta, los desplazamientos y una leyenda separada para evitar textos superpuestos.
+// positions guarda las posiciones visitadas; showFinal permite ocultar el resultado al predecir.
+function draw(positions, showFinal = true) {
+  const svg = $('graph');
+  const NS = 'http://www.w3.org/2000/svg';
+  svg.replaceChildren();
+
+  const visible = showFinal ? positions : [positions[0]];
+  const min = Math.min(-10, ...positions) - 1;
+  const max = Math.max(10, ...positions) + 1;
+  const left = 44, right = 776, axisY = 180;
+  const x = n => left + (n - min) / (max - min) * (right - left);
+  const height = visible.length > 2 ? 300 : 250;
+  svg.setAttribute('viewBox', `0 0 820 ${height}`);
+
+  function add(tag, attrs, content) {
+    const el = document.createElementNS(NS, tag);
+    for (const [key, value] of Object.entries(attrs)) el.setAttribute(key, value);
+    if (content !== undefined) el.textContent = content;
+    svg.appendChild(el);
+    return el;
+  }
+
+  // Recta numérica y marcas.
+  add('line', {x1:left, y1:axisY, x2:right, y2:axisY,
+    stroke:'#263e57', 'stroke-width':2});
+  for (let n = min; n <= max; n++) {
+    const major = n % 5 === 0;
+    add('line', {x1:x(n), y1:axisY-(major?10:5),
+      x2:x(n), y2:axisY+(major?10:5), stroke:'#526b80'});
+    if (major) add('text', {x:x(n), y:axisY+29,
+      'text-anchor':'middle', 'font-size':15, fill:'#263e57'}, fmt(n));
+  }
+
+  // Cada desplazamiento se muestra en un nivel diferente.
+  // Los extremos verticales permiten identificar inicio y fin de cada tramo.
+  for (let i = 1; i < visible.length; i++) {
+    const previous = visible[i-1], current = visible[i];
+    const laneY = 140 - (i-1)*38;
+    const x1 = x(previous), x2 = x(current);
+    const color = '#087a72';
+    add('path', {d:`M ${x1} ${axisY-9} V ${laneY} H ${x2} V ${axisY-9}`,
+      fill:'none', stroke:color, 'stroke-width':2.5,
+      'stroke-linecap':'round', 'stroke-linejoin':'round'});
+    // Número de paso al lado izquierdo de la línea para evitar confundirlo con la meta.
+    add('text', {x:Math.min(x1,x2)+5, y:laneY-7,
+      'text-anchor':'start', 'font-size':12, fill:'#075e58'},
+      `Movimiento ${i}: ${current-previous>0?'+':''}${fmt(current-previous)}`);
+  }
+
+  // Los puntos solo llevan marcadores; los nombres se muestran en una leyenda separada.
+  visible.forEach((position, i) => {
+    const last = i === visible.length-1;
+    const isFinal = last && showFinal && visible.length>1;
+    add('circle', {cx:x(position), cy:axisY, r:isFinal?7:5,
+      fill:isFinal?'#087a72':'#47698b',
+      stroke:'#ffffff', 'stroke-width':1.5});
+  });
+
+  // Leyenda en dos columnas con filas espaciadas; nunca se cruzan las etiquetas.
+  const legendY = axisY + 70;
+  visible.forEach((position, i) => {
+    const col = i%2, row = Math.floor(i/2);
+    const label = i===0?'Inicio':i===visible.length-1?'Final':`Paso ${i}`;
+    const legendX = col===0?55:430;
+    add('circle', {cx:legendX, cy:legendY+row*23-4, r:4,
+      fill:i===visible.length-1 && i>0?'#087a72':'#47698b'});
+    add('text', {x:legendX+12, y:legendY+row*23,
+      'font-size':14, fill:'#163c58',
+      'font-weight':i===visible.length-1?'bold':'normal'},
+      `${label}: ${fmt(position)}`);
+  });
+
+  $('graph-desc').textContent = 'Posiciones representadas: '+visible.map(fmt).join(' → ')+'.';
+  svg.setAttribute('aria-label', $('graph-desc').textContent);
+}
+// Activa el modo seleccionado y oculta los otros dos.
+function switchMode(next){mode=next;for(const [key,id] of [['explore','explore'],['predict','predict'],['challenge','challenge']]){$(id).classList.toggle('hide',key!==next);$('tab-'+key).setAttribute('aria-selected',String(key===next))}if(next==='explore')explore();if(next==='predict'){if(!currentPrediction)newPrediction();else draw([currentPrediction.start],false)}if(next==='challenge')draw([challengeStart],false)}
+// Modo 1: suma la posición inicial y el desplazamiento introducidos.
+function explore(){try{const start=integer('ex-start',-10,10),move=integer('ex-move',-10,10),end=start+move;draw([start,end]);feedback('ex-feedback',`${fmt(start)} ${move>=0?'+':'−'} ${Math.abs(move)} = ${fmt(end)}. ${move>0?'El movimiento es hacia la derecha.':move<0?'El movimiento es hacia la izquierda.':'No hay desplazamiento.'}`,'good')}catch(e){feedback('ex-feedback',e.message,'bad')}}
+// Cada pareja indica [posición inicial, desplazamiento] de un ejercicio del Modo 2.
+const tasks=[[-7,5],[4,-9],[-2,-6],[-8,10],[6,-4],[-3,7],[0,-8],[9,-10]];let taskIndex=-1;
+// Presenta el siguiente ejercicio sin mostrar todavía su posición final.
+function newPrediction(){taskIndex=(taskIndex+1)%tasks.length;const [start,move]=tasks[taskIndex];currentPrediction={start,move};$('prediction').value='';$('predict-prompt').textContent=`Comienza en ${fmt(start)} y realiza un desplazamiento de ${fmt(move)} unidades. ¿En qué posición termina?`;feedback('predict-feedback','Introduzca su predicción y seleccione «Comprobar».');draw([start],false)}
+// Compara la predicción con el resultado y ofrece retroalimentación.
+function checkPrediction(){try{const guess=integer('prediction',-10,10),{start,move}=currentPrediction,end=start+move;if(guess===end){draw([start,end]);feedback('predict-feedback',`¡Correcto! ${fmt(start)} ${move>=0?'+':'−'} ${Math.abs(move)} = ${fmt(end)}.`,'good')}else{draw([start],false);feedback('predict-feedback',`Todavía no. Revisa: comienza en ${fmt(start)} y se mueve ${Math.abs(move)} unidades hacia ${move<0?'la izquierda':'la derecha'}. Vuelva a intentarlo.`,'bad')}}catch(e){feedback('predict-feedback',e.message,'bad')}}
+// Crea una nueva posición inicial y una meta, y limpia los tres movimientos anteriores.
+function newChallenge(){
+  // Se eligen posiciones distintas dentro de la recta numérica.
+  // La diferencia debe poder obtenerse con tres movimientos no nulos
+  // entre -10 y 10, incluyendo al menos un movimiento negativo.
+  let start, target, difference;
+  do {
+    start=Math.floor(Math.random()*21)-10;
+    target=Math.floor(Math.random()*21)-10;
+    difference=target-start;
+  } while (start===target || difference < -29 || difference > 19 ||
+           (start===challengeStart && target===challengeTarget));
+  challengeStart=start;
+  challengeTarget=target;
+  $('challenge-start').textContent=fmt(start);
+  $('challenge-target').textContent=fmt(target);
+  ['m1','m2','m3'].forEach(id=>$(id).value='');
+  feedback('challenge-feedback',`Nuevo desafío: comienza en ${fmt(start)} y llega a ${fmt(target)}. Introduzca tres movimientos diferentes de cero, incluyendo al menos uno negativo.`);
+  draw([start],false);
+}
+// Valida los tres movimientos y comprueba si el recorrido alcanza la meta.
+function checkChallenge(){
+  try {
+    const moves=[integer('m1',-10,10),integer('m2',-10,10),integer('m3',-10,10)];
+    const positions=[challengeStart];
+    moves.forEach(m=>positions.push(positions.at(-1)+m));
+    if(moves.some(m=>m===0)){
+      draw([challengeStart],false);
+      return feedback('challenge-feedback','Cada movimiento debe ser distinto de cero. Revise su propuesta.','bad');
+    }
+    if(!moves.some(m=>m<0)){
+      draw([challengeStart],false);
+      return feedback('challenge-feedback','Falta al menos un movimiento hacia la izquierda (negativo).','bad');
+    }
+    draw(positions);
+    const final=positions.at(-1);
+    const difference=challengeTarget-challengeStart;
+    feedback('challenge-feedback',
+      final===challengeTarget
+      ? `¡Lo logró! ${positions.map(fmt).join(' → ')}. El desplazamiento total es ${difference>0?'+':''}${fmt(difference)}. Busque otra combinación diferente o genere un nuevo desafío.`
+      : `Termina en ${fmt(final)}, no en ${fmt(challengeTarget)}. Necesita un desplazamiento total de ${difference>0?'+':''}${fmt(difference)} desde ${fmt(challengeStart)}. Ajuste los movimientos.`,
+      final===challengeTarget?'good':'bad');
+  } catch(e) {
+    feedback('challenge-feedback',e.message,'bad');
+  }
+}
+
+// Al abrir la página se muestra el primer recorrido del Modo 1.
+explore();
+</script></body></html>
